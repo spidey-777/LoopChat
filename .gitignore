@@ -1,0 +1,4 @@
+server/user/node_modules/
+server/user/.env
+server/mail/node_modules/
+server/mail/.env
