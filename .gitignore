@@ -2,6 +2,8 @@ server/user/node_modules/
 server/user/.env
 server/mail/node_modules/
 server/mail/.env
+server/chat/node_modules/
+server/chat/.env
 
 
 
