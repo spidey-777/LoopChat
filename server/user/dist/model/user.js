@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-const schema = (Schema) = new Schema({
+const userSchema = new Schema({
     name: {
         type: String,
         required: true,
@@ -8,8 +8,8 @@ const schema = (Schema) = new Schema({
         type: String,
         required: true,
         unique: true,
-    }
+    },
 }, {
-    timestamps: true
+    timestamps: true,
 });
-export const User = mongoose.model('User', schema);
+export const User = mongoose.model('User', userSchema);
