@@ -1,4 +1,5 @@
 'use client';
+import ChatSideBar from '@/components/chatSidebar';
 import Loading from '@/components/Loading';
 import { useAppData,User } from '@/context/appContext'
 import { useRouter } from 'next/navigation';
@@ -40,7 +41,9 @@ const ChatApp = () => {
     return <Loading/>
   }
   return (
-    <div className='min-h-screen flex bg-gray-900 text-white relative overflow-hidden'>ChatApp</div>
+    <div className='min-h-screen flex bg-gray-900 text-white relative overflow-hidden'>
+      <ChatSideBar/>
+    </div>
   )
 }
 
