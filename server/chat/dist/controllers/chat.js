@@ -16,7 +16,7 @@ export const createNewChat = tryCatch(async (req, res) => {
     if (existingChat) {
         res.json({
             message: "chat already exist",
-            chatId: existingChat._id
+            chatId: existingChat._id,
         });
         return;
     }
@@ -25,7 +25,7 @@ export const createNewChat = tryCatch(async (req, res) => {
     });
     res.status(200).json({
         message: "new chat created",
-        chatId: newChat._id
+        chatId: newChat._id,
     });
 });
 export const getAllChat = tryCatch(async (req, res) => {
@@ -88,13 +88,13 @@ export const sendMessage = tryCatch(async (req, res) => {
     const chat = await Chat.findById(chatId);
     if (!chat) {
         return res.status(404).json({
-            message: "chat not found"
+            message: "chat not found",
         });
     }
     const isUserInChat = chat.users.some((userId) => userId.toString() === senderId.toString());
     if (!isUserInChat) {
         return res.status(403).json({
-            message: "you are not a participant of this chat"
+            message: "you are not a participant of this chat",
         });
     }
     const otherUserId = chat.users.find((userId) => userId.toString() !== senderId.toString());
@@ -113,7 +113,7 @@ export const sendMessage = tryCatch(async (req, res) => {
     if (imageFile) {
         messageData.image = {
             url: imageFile.path,
-            publicId: imageFile.filename
+            publicId: imageFile.filename,
         };
         messageData.messageType = "image";
         messageData.text = text || "";
@@ -130,12 +130,12 @@ export const sendMessage = tryCatch(async (req, res) => {
             text: latestMessageText,
             sender: senderId,
         },
-        UpdatedAt: new Date()
+        UpdatedAt: new Date(),
     }, { new: true });
     //amit to scoket
     res.status(201).json({
         message: savedMessage,
-        sender: senderId
+        sender: senderId,
     });
 });
 export const getMessageByChat = tryCatch(async (req, res) => {
@@ -160,7 +160,7 @@ export const getMessageByChat = tryCatch(async (req, res) => {
     const isUserInChat = chat.users.some((userId) => userId.toString() === userId.toString());
     if (!isUserInChat) {
         return res.status(403).json({
-            message: "you are not a participant of this chat"
+            message: "you are not a participant of this chat",
         });
     }
     const messagesToMarkSeen = await Messages.find({
@@ -174,7 +174,7 @@ export const getMessageByChat = tryCatch(async (req, res) => {
         seen: false,
     }, {
         seen: true,
-        seenAt: new Date()
+        seenAt: new Date(),
     });
     const messages = await Messages.find({ chatId }).sort({ createdAt: 1 });
     const otherUserId = chat.users.find((id) => id !== userId);
@@ -182,20 +182,20 @@ export const getMessageByChat = tryCatch(async (req, res) => {
         const { data } = await axios.get(`${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`);
         if (!otherUserId) {
             return res.status(400).json({
-                message: "no other user"
+                message: "no other user",
             });
         }
-        //soket work 
+        //soket work
         res.json({
             messages,
-            user: data
+            user: data,
         });
     }
     catch (error) {
         console.log(error);
         res.json({
             messages,
-            user: { _id: otherUserId, name: "Unknown user" }
+            user: { _id: otherUserId, name: "Unknown user" },
         });
     }
 });

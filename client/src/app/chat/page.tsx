@@ -40,9 +40,21 @@ const ChatApp = () => {
   if(loading){
     return <Loading/>
   }
+  const handleLogout = ()=> logoutUser();
   return (
     <div className='min-h-screen flex bg-gray-900 text-white relative overflow-hidden'>
-      <ChatSideBar/>
+      <ChatSideBar
+      sidebarOpen={sidebarOpen}
+      setSidebarOpen={setSidebarOpen}
+      showAllUsers={showAllUsers}
+      setShowAllUsers={setShowAllUsers}
+      Users={users}
+      logedInUser={loginUser}
+      chats={chats}
+      selectedUser={selectedUser}
+      setSlectedUser={setSelectedUser}
+      handleLogout={handleLogout}
+      />
     </div>
   )
 }

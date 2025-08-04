@@ -120,7 +120,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
                     Authorization: `Bearer ${token}`,
                 },
             })
-            setUsers(data.users);
+            setUsers(data);
         } catch (error) {
             console.error("Error fetching users:", error);
         }
