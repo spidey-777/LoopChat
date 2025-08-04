@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import axios from "axios";
 import ChatHeader from "@/components/chatHeader";
+import ChatMessages from "@/components/chatMessages";
 export interface Message {
   _id: string;
   chatId: string;
@@ -138,6 +139,7 @@ const ChatApp = () => {
   <div className="flex-1 flex flex-col bg-white/5 backdrop-blur-xl">
     <ChatHeader user={user} isTyping={isTyping} setSidebarOpen={setSidebarOpen} />
     {/* Chat Body */}
+    <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loginUser}/>
   </div>
 
   {/* Mobile overlay for sidebar */}
