@@ -2,6 +2,7 @@ import { Message } from "@/app/chat/page";
 import { User } from "@/context/appContext";
 import React, { useEffect, useMemo, useRef } from "react";
 import moment from "moment";
+import { Check, CheckCheck } from "lucide-react";
 
 interface ChatMessagesProps {
   selectedUser: string | null;
@@ -70,11 +71,25 @@ const ChatMessages = ({
                       isSendByLoggedInUser ? "pr-2 flow-row-reverse" : "pl-2"
                     }`}
                   >
-                    <span></span>
+                    <span>{moment(e.createdAt).format("hh:mm A . MMM D")}</span>
+                    {
+                      isSendByLoggedInUser && <div className="flex items-center ml-1 ">
+                        {
+                          e.seen? <div className="flex items-center gap-1 text-blue-400 ">
+                            <CheckCheck className="w-3 h-3"/>
+                            {
+                              e.seenAt && <span>{moment(e.seenAt).format("hh:mm A ")} </span>
+                            }
+                          </div>: <Check className="w-3 h-3 text-gray-500"/>
+                        }
+                        
+                      </div>
+                    }
                   </div>
                 </div>
               );
             })}
+            <div ref={bottamRef} />
           </>
         )}
       </div>
