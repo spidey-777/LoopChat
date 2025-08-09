@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import ChatHeader from "@/components/chatHeader";
 import ChatMessages from "@/components/chatMessages";
+import MessageInput from "@/components/messageInput";
 export interface Message {
   _id: string;
   chatId: string;
@@ -46,6 +47,8 @@ const ChatApp = () => {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+
+
 
   useEffect(() => {
     if (!isAuth && !loading) {
@@ -107,6 +110,70 @@ const ChatApp = () => {
     }
   };
 
+
+    const handleMessageSent = async(e:any,imageFile?:File|null)=>{
+      e.preventDefault();
+
+      if(!message.trim() && !imageFile ) return;
+
+      if(!selectedUser) return;
+
+
+      //socket work 
+
+
+      const token = Cookies.get("token");
+
+      try {
+        const formData = new FormData();
+
+        formData.append("chatId",selectedUser)
+
+        if(message.trim()){
+          formData.append('text',message);
+
+        }
+        if(imageFile){
+          formData.append('image',imageFile);
+
+        }
+        const {data} = await axios.post(`${chat_service}/api/v1/message`,formData,{
+          headers:{
+            Authorization: `Bearer ${token}`,
+            "Content-Type":"multipart/form-data"
+
+          }
+        })
+        setMessages((prev)=>{
+          const currentMessages = prev || [];
+          const messageExist = currentMessages.some((msg)=> msg._id === data.message._id)
+
+          if(!messageExist){
+            return [...currentMessages,data.message]
+          }
+          return currentMessages;
+
+        })
+        setMessage("");
+        const displayText = imageFile ? "📷 image" : message;
+      } catch (error:any) {
+        toast.error(error.response.data.message)
+        
+      }
+
+
+    }
+    const handleTyping = (val: string)=>{
+      setMessage(val);
+
+      if(!selectedUser){
+        return;
+      }
+
+      //socket setup
+
+
+    }
   useEffect(() => {
     if (selectedUser) {
       fetchChat();
@@ -140,6 +207,7 @@ const ChatApp = () => {
     <ChatHeader user={user} isTyping={isTyping} setSidebarOpen={setSidebarOpen} />
     {/* Chat Body */}
     <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loginUser}/>
+    <MessageInput selectedUser={selectedUser} message={message} setMessage={handleTyping} handleMessageSend={handleMessageSent}/>
   </div>
 
   {/* Mobile overlay for sidebar */}
