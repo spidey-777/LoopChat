@@ -14,6 +14,10 @@ const io = new Server(server, {
 
 const userSocketMap: Record<string, string> = {};
 
+export const getRecieverSocketId = (recieverId:string):string | undefined =>{
+    return userSocketMap[recieverId];
+}
+
 io.on('connection', (socket: Socket) => {
     console.log('user connected', socket.id);
 
@@ -26,6 +30,35 @@ io.on('connection', (socket: Socket) => {
 
     io.emit('getOnlineUser', Object.keys(userSocketMap));
 
+    if(userId){
+        socket.join(userId);
+
+    }
+
+    socket.on('typing',(data)=>{
+        console.log(`user ${data.userId} is typing in chat ${data.chatId}`);
+        socket.to(data.chatId).emit("userTyping",{
+            chatId:data.chatId,
+            userId:userId
+        })
+    })
+    socket.on("stopTyping",(data)=>{
+        console.log(`User ${data.userId} stopped typing in chat ${data.chatId}`);
+        socket.to(data.chatId).emit('userStoppedTyping',{
+             chatId:data.chatId,
+            userId:userId
+        })
+    })
+    socket.on("joinChat",(chatId)=>{
+        socket.join(chatId);
+        console.log(`user ${userId} joined chatRoom ${chatId}`)
+    })
+
+    socket.on('leaveChat',(chatId)=>{
+        socket.leave(chatId);
+        console.log(`user ${userId} left chatRoom ${chatId}`)
+
+    })
     socket.on('disconnect', () => {
         console.log('user disconnected', socket.id);
 

@@ -64,17 +64,21 @@ const ChatHeader = ({
                           className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
                           style={{ animationDelay: "0.2s" }}
                         ></div>
-
                       </div>
-                      <span className="text-blue-500 font-medium ">typing...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 ">
-                      <div className={`w-2 h-2 rounded-full ${isOnlineUser ? 'bg-green-500 ':"bg-gray-500"}`}></div>
-                      <span className={`text-sm font-medium ${isOnlineUser ? 'text-green-500':'text-gray-500'}`}>
-                        {
-                          isOnlineUser? 'Online':"Offline"
-                        }
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          isOnlineUser ? "bg-green-500 " : "bg-gray-500"
+                        }`}
+                      ></div>
+                      <span
+                        className={`text-sm font-medium ${
+                          isOnlineUser ? "text-green-500" : "text-gray-500"
+                        }`}
+                      >
+                        {isOnlineUser ? "Online" : "Offline"}
                       </span>
                     </div>
                   )}

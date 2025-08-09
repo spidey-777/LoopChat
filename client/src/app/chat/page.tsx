@@ -38,7 +38,7 @@ const ChatApp = () => {
     setChats,
   } = useAppData();
 
-  const {onlineUsers} = SocketData()
+  const {onlineUsers,socket} = SocketData()
 
   const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<string | null>("");
@@ -124,6 +124,15 @@ const ChatApp = () => {
 
 
       //socket work 
+      if(typingTimeout){
+        clearTimeout(typingTimeout)
+        setTypingTimeout(null);
+      }
+      socket?.emit('stopTyping',{
+        chatId:selectedUser,
+        userId: loginUser?._id
+      })
+
 
 
       const token = Cookies.get("token");
@@ -170,25 +179,80 @@ const ChatApp = () => {
     const handleTyping = (val: string)=>{
       setMessage(val);
 
-      if(!selectedUser){
+      if(!selectedUser || !socket) {
         return;
       }
 
       //socket setup
+      if(val.trim()){
+        socket.emit('typing',{
+          chatId:selectedUser,
+          userId:loginUser?._id,
+        })
+      }
 
+      if(typingTimeout){
+        clearTimeout(typingTimeout);
+      }
+      const timeOut = setTimeout(()=>{
+        socket.emit("stopTyping",{
+           chatId:selectedUser,
+          userId:loginUser?._id,
+        })
+      },2000)
+
+      setTypingTimeout(timeOut);
 
     }
+    useEffect(()=>{
+      socket?.on("userTyping",(data)=>{
+        console.log("recived user Typing",data)
+        if(data.chatId===selectedUser && data.userId !==loginUser?._id){
+          setIsTyping(true);
+        }
+      })
+
+         socket?.on("userStoppedTyping",(data)=>{
+        console.log("recived user stopped Typing",data)
+        if(data.chatId===selectedUser && data.userId !==loginUser?._id){
+          setIsTyping(false);
+        }
+      })
+
+      return ()=>{
+        socket?.off("userTyping")
+        socket?.off("userStoppedTyping")
+      }
+},[selectedUser,socket,loginUser?._id])
   useEffect(() => {
     if (selectedUser) {
       fetchChat();
+      setIsTyping(false);
+
+
+      socket?.emit("joinChat",selectedUser)
+
+      return ()=>{
+
+        socket?.emit('leaveChat',selectedUser)
+        setMessages(null);
+      }
     }
-  }, [selectedUser]);
+  }, [selectedUser,socket]);
+
+  useEffect(()=>{
+    return ()=>{
+      if(typingTimeout){
+        clearTimeout(typingTimeout)
+      }
+    }
+  },[typingTimeout])
 
   if (loading) {
     return <Loading />;
   }
   return (
-   <div className="min-h-screen flex bg-gray-900 text-white overflow-hidden">
+    <div className="min-h-screen flex bg-gray-900 text-white overflow-hidden">
   {/* Sidebar with responsive behavior */}
   <div className={`${sidebarOpen ? 'block' : 'hidden md:block'} w-80 bg-gray-800 border-r border-white/10 fixed md:relative z-30 md:z-auto h-full md:h-auto left-0 top-0`}>
     <ChatSideBar
