@@ -9,4 +9,14 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
+const userSocketMap = {};
+io.on("connection", (socket) => {
+    console.log('user connected', socket.id);
+    socket.on("disconnect", () => {
+        console.log('user disconnected', socket.id);
+    });
+    socket.on('connect_error', (error) => {
+        console.log("socket connection error", error);
+    });
+});
 export { app, server, io };
