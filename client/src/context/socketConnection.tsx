@@ -6,12 +6,15 @@ import { chat_service, useAppData } from "./appContext";
 
 interface SocketContexType{
     socket: Socket| null;
+    onlineUsers: string[];
+
 
 
 }
 
 const SocketContex = createContext<SocketContexType>({
     socket:null,
+    onlineUsers:[],
 
 })
 
@@ -23,14 +26,23 @@ interface ProviderProps{
 
 export const SocketProvider =({children}:ProviderProps)=>{
     const [socket,SetSocket]=useState<Socket|null>(null);
+    const [onlineUsers,setOnlineUsers] = useState<string[]>([]);
     const {user} = useAppData();
 
     useEffect(()=>{
         if(!user?._id) return;
 
-        const newSocket = io(chat_service);
+        const newSocket = io(chat_service,{
+            query:{
+                userId:user._id,
+            }
+        });
 
         SetSocket(newSocket);
+
+        newSocket.on("getOnlineUser",(users:string[])=>{
+            setOnlineUsers(users)
+        })
 
 
         return ()=>{
@@ -38,7 +50,7 @@ export const SocketProvider =({children}:ProviderProps)=>{
         }
     },[user?._id])
 
-    return <SocketContex.Provider value={{socket}}>{children}</SocketContex.Provider>
+    return <SocketContex.Provider value={{socket,onlineUsers}}>{children}</SocketContex.Provider>
 
 }
 

@@ -10,6 +10,7 @@ import axios from "axios";
 import ChatHeader from "@/components/chatHeader";
 import ChatMessages from "@/components/chatMessages";
 import MessageInput from "@/components/messageInput";
+import { SocketData } from "@/context/socketConnection";
 export interface Message {
   _id: string;
   chatId: string;
@@ -36,6 +37,9 @@ const ChatApp = () => {
     fetchChats,
     setChats,
   } = useAppData();
+
+  const {onlineUsers} = SocketData()
+
   const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<string | null>("");
   const [message, setMessage] = useState("");
@@ -199,12 +203,13 @@ const ChatApp = () => {
       setSlectedUser={setSelectedUser}
       handleLogout={handleLogout}
       createChat={createChat}
+      onlineUsers = {onlineUsers}
     />
   </div>
 
   {/* Main chat area */}
   <div className="flex-1 flex flex-col bg-white/5 backdrop-blur-xl">
-    <ChatHeader user={user} isTyping={isTyping} setSidebarOpen={setSidebarOpen} />
+    <ChatHeader user={user} isTyping={isTyping} setSidebarOpen={setSidebarOpen} onlineUsers = {onlineUsers}  />
     {/* Chat Body */}
     <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loginUser}/>
     <MessageInput selectedUser={selectedUser} message={message} setMessage={handleTyping} handleMessageSend={handleMessageSent}/>

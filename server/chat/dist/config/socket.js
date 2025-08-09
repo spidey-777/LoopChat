@@ -6,17 +6,30 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: '*',
-        methods: ["GET", "POST"]
-    }
+        methods: ['GET', 'POST'],
+    },
 });
 const userSocketMap = {};
-io.on("connection", (socket) => {
+io.on('connection', (socket) => {
     console.log('user connected', socket.id);
-    socket.on("disconnect", () => {
+    const userId = socket.handshake.query.userId;
+    if (userId && userId !== 'undefined') {
+        userSocketMap[userId] = socket.id;
+        console.log(`user ${userId} mapped to socket ${socket.id}`);
+    }
+    io.emit('getOnlineUser', Object.keys(userSocketMap));
+    socket.on('disconnect', () => {
         console.log('user disconnected', socket.id);
+        if (userId) {
+            delete userSocketMap[userId];
+            console.log(`user ${userId} removed from online user`);
+            io.emit('getOnlineUser', Object.keys(userSocketMap));
+        }
+        // Send updated online user list
+        io.emit('getOnlineUser', Object.keys(userSocketMap));
     });
     socket.on('connect_error', (error) => {
-        console.log("socket connection error", error);
+        console.log('socket connection error', error);
     });
 });
 export { app, server, io };

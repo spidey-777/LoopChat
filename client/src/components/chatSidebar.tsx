@@ -23,7 +23,8 @@ interface ChatSideBarProps {
   selectedUser: string | null;
   setSlectedUser: (userId: string | null) => void;
   handleLogout: () => void;
-  createChat:(user: User) => void;
+  createChat: (user: User) => void;
+  onlineUsers: string[];
 }
 
 const ChatSideBar = ({
@@ -37,7 +38,8 @@ const ChatSideBar = ({
   selectedUser,
   setSlectedUser,
   handleLogout,
-  createChat
+  createChat,
+  onlineUsers,
 }: ChatSideBarProps) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   return (
@@ -108,20 +110,24 @@ const ChatSideBar = ({
                   key={user._id}
                   className="w-full text-left p-4 rounded-lg border border-gray-700
                    hover:bg-gray-800 hover:border-gray-600 transition-colors "
-                    onClick={() => createChat(user)}
-
+                  onClick={() => createChat(user)}
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <UserCircle className="w-8 h-8 text-gray-300" />
+                      {onlineUsers.includes(user._id) && (
+                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-gray-900" />
+                      )}
                     </div>
-                    {/* online symbol  */}
+
                     <div className="flex-1 min-w-0 ">
                       <span className="font-medium text-white">
                         {user.name}
                       </span>
                       <div className="text-xs text-gray-400 mt-0.5">
-                        {/* to show online ofline  */}
+                        {
+                          onlineUsers.includes(user._id) ? <span className="text-green-500">online</span> : 'offline'
+                        }
                       </div>
                     </div>
                   </div>
@@ -155,8 +161,14 @@ const ChatSideBar = ({
                     <div className="relative">
                       <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
                         <UserCircle className="w-8 h-8 text-gray-300" />
-                        {/* online user */}
+                        
+
                       </div>
+                        {
+                          onlineUsers.includes(chat.user._id) && (
+                           <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-gray-900" />
+                          )
+                        }
                     </div>
                     <div className="flex-1 min-w-0 ">
                       <div className="flex items-center justify-between mb-1 ">
@@ -204,35 +216,38 @@ const ChatSideBar = ({
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="p-4 bg-gray-800 rounded-full mb-4 ">
-                <MessageCircle className="w-8 h-8 text-gray-400" />
+              <MessageCircle className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-gray-400 font-medium">No conversation yet</p>
             <p className="text-sm text-gray-500 mt-1">
-                Start a new chat to begin chatting!
+              Start a new chat to begin chatting!
             </p>
           </div>
         )}
       </div>
 
-
-       {/* footer */}
-       <div className=" p-4 border-t border-gray-700 space-y-2 ">
-        <Link href={'/profile'} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-600 transition-colors">
-        <div className="p-1.5 bg-gray-700 rounded-lg ">
+      {/* footer */}
+      <div className=" p-4 border-t border-gray-700 space-y-2 ">
+        <Link
+          href={"/profile"}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          <div className="p-1.5 bg-gray-700 rounded-lg ">
             <UserCircle className="w-6 h-6 text-gray-300" />
-        </div>
-        <span className="font-bold text-gray-700">Profile</span>
+          </div>
+          <span className="font-bold text-gray-700">Profile</span>
         </Link>
         <button
-        onClick={handleLogout}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg 
-        hover:bg-red-600 transition-colors hover:text-white text-red-200 cursor-pointer">
-            <div className="p-1.5 bg-red-600 rounded-lg ">
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg 
+        hover:bg-red-600 transition-colors hover:text-white text-red-200 cursor-pointer"
+        >
+          <div className="p-1.5 bg-red-600 rounded-lg ">
             <LogOut className="w-6 h-6 text-gray-300" />
-        </div>
-            <span className="font-bold text-red-200">Logout</span>
+          </div>
+          <span className="font-bold text-red-200">Logout</span>
         </button>
-       </div>
+      </div>
     </aside>
   );
 };
