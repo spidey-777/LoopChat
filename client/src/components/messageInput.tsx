@@ -1,11 +1,13 @@
 import { Loader2, Paperclip, Send, X } from 'lucide-react';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import Image from 'next/image'; 
 
 interface MessageInputProp {
     selectedUser: string | null;
     message: string;
     setMessage: (message: string) => void;
-    handleMessageSend: (e: any, imageFile?: File | null) => void;
+
+    handleMessageSend: (e: React.FormEvent<HTMLFormElement>, imageFile?: File | null) => void;
 }
 
 const MessageInput = ({
@@ -17,7 +19,8 @@ const MessageInput = ({
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    const handleSubmit = async (e: any) => {
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!message.trim() && !imageFile) {
             return;
@@ -39,10 +42,12 @@ const MessageInput = ({
         >
             {imageFile && (
                 <div className="relative w-fit">
-                    <img
+                    <Image
                         src={URL.createObjectURL(imageFile)}
                         alt="preview"
-                        className="w-24 h-24 object-cover rounded-lg border border-gray-600"
+                        width={96}  
+                        height={96} 
+                        className="object-cover rounded-lg border border-gray-600"
                     />
                     <button
                         type="button"
@@ -82,10 +87,10 @@ const MessageInput = ({
                 {/* Send Button */}
                 <button
                     type="submit"
-                    disabled={(!imageFile && !message)|| isUploading}
+                    disabled={(!imageFile && !message) || isUploading}
                     className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 disabled:opacity-50"
                 >
-                    {isUploading ? <Loader2 className='w-4 h-4 animate-spin' /> : <Send className='w-4 h-4 '/>}
+                    {isUploading ? <Loader2 className='w-4 h-4 animate-spin' /> : <Send className='w-4 h-4' />}
                 </button>
             </div>
         </form>

@@ -3,6 +3,7 @@ import { User } from "@/context/appContext";
 import React, { useEffect, useMemo, useRef } from "react";
 import moment from "moment";
 import { Check, CheckCheck } from "lucide-react";
+import Image from "next/image"; 
 
 interface ChatMessagesProps {
   selectedUser: string | null;
@@ -15,7 +16,6 @@ const ChatMessages = ({
   loggedInUser,
 }: ChatMessagesProps) => {
   const bottamRef = useRef<HTMLDivElement>(null);
-  //seen feature
 
   const uniqueMessages = useMemo(() => {
     if (!messages) return [];
@@ -26,9 +26,11 @@ const ChatMessages = ({
       return true;
     });
   }, [messages]);
+
   useEffect(() => {
     bottamRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedUser, uniqueMessages]);
+
   return (
     <div className="flex-1 overflow-hidden">
       <div className="h-full max-h-[calc(100vh-200px)] overflow-y-auto p-4 custom-scroll">
@@ -57,10 +59,13 @@ const ChatMessages = ({
                   >
                     {e.messageType === "image" && e.image && (
                       <div className="relative group">
-                        <img
+
+                        <Image
                           src={e.image.url}
                           alt="shared image"
-                          className="max-w-full h-auto rounded-lg "
+                          width={300} 
+                          height={300} 
+                          className="max-w-full h-auto rounded-lg " 
                         />
                       </div>
                     )}
@@ -72,19 +77,22 @@ const ChatMessages = ({
                     }`}
                   >
                     <span>{moment(e.createdAt).format("hh:mm A . MMM D")}</span>
-                    {
-                      isSendByLoggedInUser && <div className="flex items-center ml-1 ">
-                        {
-                          e.seen? <div className="flex items-center gap-1 text-blue-400 ">
-                            <CheckCheck className="w-3 h-3"/>
-                            {
-                              e.seenAt && <span>{moment(e.seenAt).format("hh:mm A ")} </span>
-                            }
-                          </div>: <Check className="w-3 h-3 text-gray-500"/>
-                        }
-                        
+                    {isSendByLoggedInUser && (
+                      <div className="flex items-center ml-1 ">
+                        {e.seen ? (
+                          <div className="flex items-center gap-1 text-blue-400 ">
+                            <CheckCheck className="w-3 h-3" />
+                            {e.seenAt && (
+                              <span>
+                                {moment(e.seenAt).format("hh:mm A ")}{" "}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <Check className="w-3 h-3 text-gray-500" />
+                        )}
                       </div>
-                    }
+                    )}
                   </div>
                 </div>
               );
