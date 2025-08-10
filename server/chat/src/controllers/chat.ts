@@ -47,7 +47,7 @@ export const getAllChat = tryCatch(async (req: AuthenticatedRequest, res) => {
 
   const chatWithUserData = await Promise.all(
     chats.map(async (chat) => {
-      const otherUserId = chat.users.find((id) => id !== userId);
+      const otherUserId = chat.users.find((id) => id.toString() !== userId.toString());
 
       const unSeenCount = await Messages.countDocuments({
         chatId: chat._id,
@@ -56,9 +56,11 @@ export const getAllChat = tryCatch(async (req: AuthenticatedRequest, res) => {
       });
 
       try {
-        const { data } = await axios.get(
-          `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
-        );
+
+        const userServiceUrl = new URL(process.env.USER_SERVICE!);
+        userServiceUrl.pathname = `/api/v1/user/${otherUserId}`;
+
+        const { data } = await axios.get(userServiceUrl.toString());
 
         return {
           user: data,
@@ -70,6 +72,7 @@ export const getAllChat = tryCatch(async (req: AuthenticatedRequest, res) => {
         };
       } catch (error: any) {
         console.error("Error fetching user data:", error.message);
+        console.error("Failed URL:", `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`);
         return {
           user: null,
           chat: {
@@ -84,7 +87,6 @@ export const getAllChat = tryCatch(async (req: AuthenticatedRequest, res) => {
 
   res.status(200).json({ chats: chatWithUserData });
 });
-
 export const sendMessage = tryCatch(async (req: AuthenticatedRequest, res) => {
   const senderId = req.user?._id;
   const { chatId, text } = req.body;

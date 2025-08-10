@@ -36,14 +36,16 @@ export const getAllChat = tryCatch(async (req, res) => {
     }
     const chats = await Chat.find({ users: userId }).sort({ updatedAt: -1 });
     const chatWithUserData = await Promise.all(chats.map(async (chat) => {
-        const otherUserId = chat.users.find((id) => id !== userId);
+        const otherUserId = chat.users.find((id) => id.toString() !== userId.toString());
         const unSeenCount = await Messages.countDocuments({
             chatId: chat._id,
             sender: { $ne: userId },
             seen: false,
         });
         try {
-            const { data } = await axios.get(`${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`);
+            const userServiceUrl = new URL(process.env.USER_SERVICE);
+            userServiceUrl.pathname = `/api/v1/user/${otherUserId}`;
+            const { data } = await axios.get(userServiceUrl.toString());
             return {
                 user: data,
                 chat: {
@@ -55,6 +57,7 @@ export const getAllChat = tryCatch(async (req, res) => {
         }
         catch (error) {
             console.error("Error fetching user data:", error.message);
+            console.error("Failed URL:", `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`);
             return {
                 user: null,
                 chat: {
