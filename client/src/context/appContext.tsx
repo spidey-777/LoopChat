@@ -5,8 +5,8 @@ import Cookies from "js-cookie";
 import toast, { Toaster} from 'react-hot-toast'
 import axios from "axios";
 
-export const user_service = 'http://localhost:5050';
-export const chat_service = 'http://localhost:5002';
+export const user_service = 'https://loopchat.onrender.com';
+export const chat_service = 'https://loopchat-1.onrender.com';
 
 
 
