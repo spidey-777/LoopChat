@@ -4,11 +4,12 @@ let connection;
 export const connectRabbitMQ = async () => {
     try {
         connection = await amqp.connect({
-            protocol: "amqp",
+            protocol: process.env.Rabbitmq_Protocol,
             hostname: process.env.Rabbitmq_Host,
-            port: 5672,
+            port: Number(process.env.Rabbitmq_Port),
             username: process.env.Rabbitmq_Username,
             password: process.env.Rabbitmq_Password,
+            vhost: process.env.Rabbitmq_Vhost,
         });
         // Handle connection events
         connection.on('error', (err) => {
