@@ -3,6 +3,7 @@ import tryCatch from "../config/tryCatch.js";
 import { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import { Chat } from "../models/Chat.js";
 import { Messages } from "../models/Messages.js";
+import { getRecieverSocketId, io } from "../config/socket.js";
 
 export const createNewChat = tryCatch(
   async (req: AuthenticatedRequest, res) => {
@@ -65,7 +66,7 @@ export const getAllChat = tryCatch(async (req: AuthenticatedRequest, res) => {
             ...chat.toObject(),
             latestMessage: chat.latestMessage || null,
           },
-          unSeenCount,
+          unseenCount: unSeenCount,
         };
       } catch (error: any) {
         console.error("Error fetching user data:", error.message);
@@ -75,7 +76,7 @@ export const getAllChat = tryCatch(async (req: AuthenticatedRequest, res) => {
             ...chat.toObject(),
             latestMessage: chat.latestMessage || null,
           },
-          unSeenCount,
+          unseenCount: unSeenCount,
         };
       }
     })
@@ -128,12 +129,21 @@ export const sendMessage = tryCatch(async (req: AuthenticatedRequest, res) => {
     });
   }
   //soket setup
+  const receiverSocketId = getRecieverSocketId(otherUserId.toString());
+  let isReceiverInChatRoom = false;
+
+if(receiverSocketId){
+  const receiverSocket = io.sockets.sockets.get(receiverSocketId);
+  if(receiverSocket && receiverSocket.rooms.has(chatId)){
+    isReceiverInChatRoom= true;
+  }
+}
 
   let messageData: any = {
     chatId: chatId,
     sender: senderId,
-    seen: false,
-    seenAt: undefined,
+    seen: isReceiverInChatRoom,
+    seenAt: isReceiverInChatRoom ? new Date():undefined,
   };
 
   if (imageFile) {
@@ -153,20 +163,40 @@ export const sendMessage = tryCatch(async (req: AuthenticatedRequest, res) => {
   const savedMessage = await message.save();
 
   const latestMessageText = imageFile ? "📷 image" : text;
-
-  await Chat.findByIdAndUpdate(
-    chatId,
-    {
-      latestMessage: {
-        text: latestMessageText,
-        sender: senderId,
-      },
-      UpdatedAt: new Date(),
+await Chat.findByIdAndUpdate(
+  chatId,
+  {
+    latestMessage: {
+      text: latestMessageText,
+      sender: senderId,
     },
-    { new: true }
-  );
+    updatedAt: new Date(), 
+  },
+  { new: true }
+);
 
   //amit to scoket
+
+  io.to(chatId).emit("newMessage",savedMessage);
+
+  if(receiverSocketId){
+    io.to(receiverSocketId).emit("newMessage",savedMessage)
+  }
+
+  const senderSocketId = getRecieverSocketId(senderId.toString());
+
+  if(senderSocketId){
+    io.to(senderSocketId).emit("newMessage",savedMessage)
+  }
+
+  if(isReceiverInChatRoom && senderSocketId){
+    io.to(senderSocketId).emit("messagesSeen",{
+      chatId:chatId,
+      seenBy:otherUserId,
+      messageIds:[savedMessage._id],
+
+    })
+  }
 
   res.status(201).json({
     message: savedMessage,
@@ -234,6 +264,16 @@ export const getMessageByChat = tryCatch(
         });
       }
       //soket work
+      if(messagesToMarkSeen.length>0){
+        const otherUserSocketId = getRecieverSocketId(otherUserId.toString());
+        if(otherUserSocketId){
+          io.to(otherUserSocketId).emit("messagesSeen",{
+            chatId:chatId,
+            seenBy:userId,
+            messageIds:messagesToMarkSeen.map((msg)=>msg._id)
+          })
+        }
+      }
 
       res.json({
         messages,
