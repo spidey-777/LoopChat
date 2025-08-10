@@ -1,4 +1,5 @@
-import amqp from 'amqplib';
+// /Users/ankitdamolia/Documents/projects/LoopChat/server/user/src/config/rabbitmq.ts
+import { connect } from 'amqplib';
 let channel;
 let connection;
 export const connectRabbitMQ = async () => {
@@ -11,18 +12,16 @@ export const connectRabbitMQ = async () => {
             password: process.env.Rabbitmq_Password,
             vhost: process.env.Rabbitmq_Vhost,
         };
-        connection = (await amqp.connect(connOptions));
-        // Handle connection events
+        connection = (await connect(connOptions));
         connection.on('error', (err) => {
             console.error('❌ RabbitMQ connection error:', err);
-            setTimeout(connectRabbitMQ, 5000); // Reconnect after 5 seconds
+            setTimeout(connectRabbitMQ, 5000);
         });
         connection.on('close', () => {
             console.log('⚠️ RabbitMQ connection closed. Attempting to reconnect...');
             setTimeout(connectRabbitMQ, 5000);
         });
         channel = await connection.createChannel();
-        // Handle channel events
         channel.on('error', (err) => {
             console.error('❌ RabbitMQ channel error:', err);
         });
@@ -36,14 +35,20 @@ export const connectRabbitMQ = async () => {
         setTimeout(connectRabbitMQ, 5000);
     }
 };
+// ... rest of the file
 export const publishToQueue = async (queueName, message) => {
     if (!channel) {
-        console.error('❌ RabbitMQ channel is not initialized');
+        console.error('❌ RabbitMQ channel is not initialized. Cannot publish message.');
         return;
     }
-    await channel.assertQueue(queueName, { durable: true });
-    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
-        persistent: true,
-    });
-    console.log(`📤 Message sent to queue: ${queueName}`);
+    try {
+        await channel.assertQueue(queueName, { durable: true });
+        channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
+            persistent: true,
+        });
+        console.log(`📤 Message sent to queue: ${queueName}`);
+    }
+    catch (error) {
+        console.error(`❌ Failed to send message to queue ${queueName}:`, error);
+    }
 };

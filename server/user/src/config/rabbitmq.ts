@@ -1,8 +1,9 @@
-import amqp, { Connection, Channel, Options } from 'amqplib';
+// /Users/ankitdamolia/Documents/projects/LoopChat/server/user/src/config/rabbitmq.ts
+
+import { connect,  Connection as AmqpConnection, Channel, Options } from 'amqplib';
 
 let channel: Channel;
-let connection: Connection;
-
+let connection: AmqpConnection;
 export const connectRabbitMQ = async () => {
   try {
     const connOptions: Options.Connect = {
@@ -14,12 +15,12 @@ export const connectRabbitMQ = async () => {
       vhost: process.env.Rabbitmq_Vhost,
     };
 
-    connection = (await amqp.connect(connOptions)) as Connection;
+        connection = (await connect(connOptions)) as unknown as AmqpConnection;
 
-    // Handle connection events
+
     connection.on('error', (err) => {
       console.error('❌ RabbitMQ connection error:', err);
-      setTimeout(connectRabbitMQ, 5000); // Reconnect after 5 seconds
+      setTimeout(connectRabbitMQ, 5000);
     });
 
     connection.on('close', () => {
@@ -27,9 +28,9 @@ export const connectRabbitMQ = async () => {
       setTimeout(connectRabbitMQ, 5000);
     });
 
-    channel = await connection.createChannel();
 
-    // Handle channel events
+     channel = await connection.createChannel();
+
     channel.on('error', (err) => {
       console.error('❌ RabbitMQ channel error:', err);
     });
@@ -44,18 +45,26 @@ export const connectRabbitMQ = async () => {
     setTimeout(connectRabbitMQ, 5000);
   }
 };
-
+// ... rest of the file
 export const publishToQueue = async (queueName: string, message: any) => {
   if (!channel) {
-    console.error('❌ RabbitMQ channel is not initialized');
+
+    console.error('❌ RabbitMQ channel is not initialized. Cannot publish message.');
     return;
   }
 
-  await channel.assertQueue(queueName, { durable: true });
+  try {
 
-  channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
-    persistent: true,
-  });
+    await channel.assertQueue(queueName, { durable: true });
 
-  console.log(`📤 Message sent to queue: ${queueName}`);
+
+    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
+      persistent: true,
+    });
+
+    console.log(`📤 Message sent to queue: ${queueName}`);
+  } catch (error) {
+    console.error(`❌ Failed to send message to queue ${queueName}:`, error);
+
+  }
 };
