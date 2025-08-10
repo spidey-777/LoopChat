@@ -1,18 +1,20 @@
-import amqp from 'amqplib';
+import amqp, { Connection, Channel, Options } from 'amqplib';
 
-let channel: amqp.Channel;
-let connection: amqp.Connection;
+let channel: Channel;
+let connection: Connection;
 
 export const connectRabbitMQ = async () => {
   try {
-   connection = await amqp.connect({
-  protocol: process.env.Rabbitmq_Protocol,
-  hostname: process.env.Rabbitmq_Host,
-  port: Number(process.env.Rabbitmq_Port),
-  username: process.env.Rabbitmq_Username,
-  password: process.env.Rabbitmq_Password,
-  vhost: process.env.Rabbitmq_Vhost,
-});
+    const connOptions: Options.Connect = {
+      protocol: process.env.Rabbitmq_Protocol as 'amqp' | 'amqps',
+      hostname: process.env.Rabbitmq_Host,
+      port: Number(process.env.Rabbitmq_Port),
+      username: process.env.Rabbitmq_Username,
+      password: process.env.Rabbitmq_Password,
+      vhost: process.env.Rabbitmq_Vhost,
+    };
+
+    connection = (await amqp.connect(connOptions)) as Connection;
 
     // Handle connection events
     connection.on('error', (err) => {
@@ -26,7 +28,7 @@ export const connectRabbitMQ = async () => {
     });
 
     channel = await connection.createChannel();
-    
+
     // Handle channel events
     channel.on('error', (err) => {
       console.error('❌ RabbitMQ channel error:', err);
@@ -36,17 +38,16 @@ export const connectRabbitMQ = async () => {
       console.log('⚠️ RabbitMQ channel closed');
     });
 
-    console.log("✅ Connected to RabbitMQ");
+    console.log('✅ Connected to RabbitMQ');
   } catch (error) {
-    console.error("❌ Failed to connect to RabbitMQ:", error);
-    // Retry connection after 5 seconds
+    console.error('❌ Failed to connect to RabbitMQ:', error);
     setTimeout(connectRabbitMQ, 5000);
   }
 };
 
-export const publishTOQueue = async (queueName: string, message: any) => {
+export const publishToQueue = async (queueName: string, message: any) => {
   if (!channel) {
-    console.error("❌ RabbitMQ channel is not initialized");
+    console.error('❌ RabbitMQ channel is not initialized');
     return;
   }
 

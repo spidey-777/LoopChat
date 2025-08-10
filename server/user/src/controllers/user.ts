@@ -1,5 +1,5 @@
 import { generateToken } from "../config/generateToken.js";
-import { publishTOQueue } from "../config/rabbitmq.js";
+import { publishToQueue } from "../config/rabbitmq.js";
 import tryCatch from "../config/tryCatch.js";
 import { redisClient } from "../index.js";
 import { AuthenticatedRequest } from "../middleware/isAuth.js";
@@ -33,7 +33,7 @@ export const loginUser = tryCatch(async (req, res) => {
     body: `Your one-time code is ${otp}. It is valid for 5 minutes.`,
   };
 
-  await publishTOQueue("send-otp", message);
+  await publishToQueue("send-otp", message);
 
   return res.status(200).json({
     message: "OTP sent to your email",
