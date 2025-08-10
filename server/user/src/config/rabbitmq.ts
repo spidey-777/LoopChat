@@ -1,5 +1,3 @@
-// /Users/ankitdamolia/Documents/projects/LoopChat/server/user/src/config/rabbitmq.ts
-
 import { connect,  Connection as AmqpConnection, Channel, Options } from 'amqplib';
 
 let channel: Channel;
