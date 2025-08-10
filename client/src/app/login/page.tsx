@@ -8,10 +8,11 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
-  const {isAuth, loading:userLoading} = useAppData();
+  const { isAuth, loading: userLoading } = useAppData();
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
+
   const handleSubmit = async (
     e: React.FormEvent<HTMLElement>
   ): Promise<void> => {
@@ -24,18 +25,28 @@ const LoginPage = () => {
       });
       toast.success(data.message);
       router.push(`/verify?email=${email}`);
-    } catch (error: any) {
-      toast.error(error.response.data.message);
+    } catch (error: unknown) {
+      // FIX: Catch error as 'unknown' and use a type guard for safety.
+      if (axios.isAxiosError(error)) {
+        // Now it's safe to access error.response
+        toast.error(error.response?.data?.message || "An error occurred");
+      } else {
+        // Handle non-Axios errors
+        toast.error("An unexpected error occurred. Please try again.");
+        console.error("Login error:", error);
+      }
     } finally {
       setLoading(false);
     }
   };
-  if(userLoading){
-    return <Loading/>
+
+  if (userLoading) {
+    return <Loading />;
   }
   if (isAuth) {
     return redirect("/chat");
   }
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full ">
@@ -78,8 +89,8 @@ const LoginPage = () => {
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-5 h-5" />
-                  sending otp to your mail...
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Sending OTP to your mail...</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
