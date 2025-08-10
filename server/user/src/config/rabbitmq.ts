@@ -27,7 +27,7 @@ export const connectRabbitMQ = async () => {
     });
 
 
-     channel = await connection.createChannel();
+     channel = await (connection as any).createChannel();
 
     channel.on('error', (err) => {
       console.error('❌ RabbitMQ channel error:', err);
