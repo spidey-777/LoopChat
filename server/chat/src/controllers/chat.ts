@@ -62,6 +62,7 @@ export const getAllChat = tryCatch(async (req: AuthenticatedRequest, res) => {
 
         const { data } = await axios.get(userServiceUrl.toString());
 
+
         return {
           user: data,
           chat: {

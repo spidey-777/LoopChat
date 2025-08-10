@@ -39,7 +39,7 @@ export interface Chats{
 interface AppContextType{
     user: User | null;
     loading: boolean;
-    isAuth: boolean;
+    isAuth: boolean; 
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
     setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
     logoutUser: ()=> Promise<void>;
